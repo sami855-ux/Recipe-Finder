@@ -1,32 +1,14 @@
-import { useEffect, useState } from "react"
 import { HiOutlineSearch } from "react-icons/hi"
+
+import { useItemContext } from "../context/ItemContext"
 import Spinner from "../Ui/Spinner"
 import Item from "../Ui/Item"
-import { useItemContext } from "../context/ItemContext"
-
-const API_KEY = "d797a2c6b15040d99078cf3cf3f3ec40"
-const BASE_URL = "https://api.spoonacular.com/recipes/complexSearch"
 
 const Home = () => {
-  const { recipeItems, handleAddRecipe } = useItemContext()
-  const [isLoading, setIsLoading] = useState(false)
+  const { recipeItems, handleSetQuery, query, searchedItems, isLoading } =
+    useItemContext()
 
-  useEffect(() => {
-    async function fetchRecipe() {
-      setIsLoading(true)
-      try {
-        const res = await fetch(`${BASE_URL}?apiKey=${API_KEY}&number=50`)
-        const data = await res.json()
-
-        handleAddRecipe(data.results)
-      } catch (error) {
-        console.log(error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchRecipe()
-  }, [])
+  const filtered = query.length === 0 ? recipeItems : searchedItems
 
   return (
     <div className="ml-[300px] min-h-screen flex items-center pt-7 flex-col">
@@ -36,6 +18,8 @@ const Home = () => {
           type="text"
           placeholder="Search for Recipe..."
           className="w-full h-full bg-transparent outline-none text-sm"
+          value={query}
+          onChange={(e) => handleSetQuery(e.target.value)}
         />
       </section>
       <section className="w-full pl-10">
@@ -47,8 +31,10 @@ const Home = () => {
         <div className="w-full flex items-center gap-3 flex-wrap">
           {isLoading ? (
             <Spinner />
+          ) : filtered?.length > 0 ? (
+            filtered?.map((item) => <Item key={item.id} item={item} />)
           ) : (
-            recipeItems.map((item) => <Item key={item.id} item={item} />)
+            <p>Recipe not found</p>
           )}
         </div>
       </section>
